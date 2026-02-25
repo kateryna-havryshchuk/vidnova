@@ -1,5 +1,6 @@
-namespace vidnova_backend.Data;
 using Microsoft.EntityFrameworkCore;
+
+namespace Vidnova.Presentation.Api.Data;
 
 public class AppDbContext: DbContext
 {

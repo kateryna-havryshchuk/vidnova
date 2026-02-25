@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace vidnova_backend.Controllers
+namespace Vidnova.Presentation.Api.Controllers
 {
     [ApiController]
     [Route("[controller]")]

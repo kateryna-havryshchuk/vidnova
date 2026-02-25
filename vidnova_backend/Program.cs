@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using vidnova_backend.Data;
+using Vidnova.Presentation.Api.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 

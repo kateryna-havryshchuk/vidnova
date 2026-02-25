@@ -1,4 +1,4 @@
-namespace vidnova_backend
+namespace Vidnova.Presentation.Api
 {
     public class WeatherForecast
     {
