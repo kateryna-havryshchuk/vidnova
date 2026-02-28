@@ -7,8 +7,24 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="DotNetEnv" Version="3.1.1" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.20"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.24">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Controllers\" />
+      <Folder Include="Extensions\" />
+      <Folder Include="Middleware\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Vidnova.Application\Vidnova.Application.csproj" />
+      <ProjectReference Include="..\Vidnova.Infrastructure\Vidnova.Infrastructure.csproj" />
     </ItemGroup>
 
 </Project>

@@ -6,4 +6,15 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <ItemGroup>
+      <Folder Include="DTOs\" />
+      <Folder Include="Mappers\" />
+      <Folder Include="Services\" />
+      <Folder Include="Validators\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Vidnova.Domain\Vidnova.Domain.csproj" />
+    </ItemGroup>
+
 </Project>
