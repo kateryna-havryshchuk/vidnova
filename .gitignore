@@ -1,1 +1,19 @@
+# env
 .env
+.env.*
+
+# IDE (repo root safety)
+.vs/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# build artifacts (monorepo safety)
+**/bin/
+**/obj/
+**/build/
+**/.dart_tool/
+**/.flutter-plugins-dependencies
+**/coverage/
