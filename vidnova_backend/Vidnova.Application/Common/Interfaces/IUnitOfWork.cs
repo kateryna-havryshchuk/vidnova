@@ -1,6 +1,6 @@
 namespace Vidnova.Application.Common.Interfaces;
 
-public interface IAppDbContext
+public interface IUnitOfWork
 {
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }
