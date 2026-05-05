@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../../data/auth_repository.dart';
 import '../../data/models/change_email_request.dart';
@@ -177,6 +178,13 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   String _extractError(Object e) {
+    if (e is PlatformException) {
+      final message = (e.message ?? '').trim();
+      if (message.isNotEmpty) return message;
+      final code = e.code.trim();
+      if (code.isNotEmpty) return 'Google sign-in error: $code';
+      return 'Google sign-in error';
+    }
     if (e is DioException) {
       if (e.type == DioExceptionType.connectionError || e.response == null) {
         return 'Network error: не вдалось підключитись до API';
@@ -257,7 +265,6 @@ class AuthCubit extends Cubit<AuthState> {
       }
     }
 
-    // Не показуємо технічний префікс "HTTP <code>:" в UI.
     return trimmed;
   }
 

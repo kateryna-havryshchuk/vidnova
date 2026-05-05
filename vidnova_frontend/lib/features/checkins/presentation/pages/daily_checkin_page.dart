@@ -343,17 +343,22 @@ class _DailyCheckInPageState extends State<DailyCheckInPage> {
   Widget _emotionGrid() {
     final blocked = _blockedEmotions();
 
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
-      children: [
-        for (final emotion in EmotionUi.all)
-          _emotionCircle(
-            emotion: emotion,
-            isSelected: _selected.containsKey(emotion),
-            isBlocked: blocked.contains(emotion) && !_selected.containsKey(emotion),
-          ),
-      ],
+    return Align(
+      alignment: Alignment.center,
+      child: Wrap(
+        alignment: WrapAlignment.center,
+        runAlignment: WrapAlignment.center,
+        spacing: 12,
+        runSpacing: 12,
+        children: [
+          for (final emotion in EmotionUi.all)
+            _emotionCircle(
+              emotion: emotion,
+              isSelected: _selected.containsKey(emotion),
+              isBlocked: blocked.contains(emotion) && !_selected.containsKey(emotion),
+            ),
+        ],
+      ),
     );
   }
 

@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../auth/presentation/bloc/auth_cubit.dart';
-import '../../../../core/network/api_config.dart';
-import '../../../../core/network/dio_factory.dart';
-import '../../../../core/storage/token_storage.dart';
+import '../../../../core/di/service_locator.dart';
 import '../../../checkins/data/checkins_api.dart';
 import '../../../checkins/data/models/checkin_models.dart';
 import '../../../checkins/presentation/pages/daily_checkin_page.dart';
@@ -31,15 +28,7 @@ class _HomeTabState extends State<HomeTab> {
   @override
   void initState() {
     super.initState();
-
-    final isAndroid = !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
-    final tokenStorage = TokenStorage();
-    final dio = DioFactory(
-      baseUrl: ApiConfig.baseUrl(isAndroidEmulator: isAndroid),
-      tokenStorage: tokenStorage,
-    ).create();
-
-    _checkInsApi = CheckInsApi(dio);
+    _checkInsApi = getIt<CheckInsApi>();
     _reloadToday();
   }
 

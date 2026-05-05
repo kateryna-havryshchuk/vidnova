@@ -36,108 +36,116 @@ class WizardStep5Result extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                isPositiveFlow ? 'Результат' : 'Після переосмислення',
-                style: const TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                isPositiveFlow
-                    ? 'Порівняймо ваш стан: на початку та зараз.'
-                    : 'Порівняймо, як змінився ваш стан: на початку та зараз.',
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Colors.blueGrey,
-                ),
-              ),
-              const SizedBox(height: 32),
-              
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withAlpha(20),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'На початку:',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey[600],
-                          ),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isPositiveFlow ? 'Результат' : 'Після переосмислення',
+                        style: const TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: beforeColor.withAlpha(26),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            '$before%',
-                            style: TextStyle(fontWeight: FontWeight.bold, color: beforeColor),
-                          ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        isPositiveFlow
+                            ? 'Порівняймо ваш стан: на початку та зараз.'
+                            : 'Порівняймо, як змінився ваш стан: на початку та зараз.',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.blueGrey,
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Зараз:',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: afterColor.withAlpha(26),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            '$after%',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: afterColor,
+                      ),
+                      const SizedBox(height: 32),
+
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withAlpha(20),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
                             ),
-                          ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ],
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'На початку:',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: beforeColor.withAlpha(26),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    '$before%',
+                                    style: TextStyle(fontWeight: FontWeight.bold, color: beforeColor),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Зараз:',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: afterColor.withAlpha(26),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    '$after%',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: afterColor,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 32),
+
+                      EmotionSlider(
+                        value: after.toDouble(),
+                        label: 'Оцініть ваш стан зараз',
+                        onChanged: (value) {
+                          context.read<JournalBloc>().add(UpdateFinalIntensityEvent(value.round()));
+                        },
+                        color: afterColor,
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              
-              const SizedBox(height: 32),
-              
-              EmotionSlider(
-                value: after.toDouble(),
-                label: 'Оцініть ваш стан зараз',
-                onChanged: (value) {
-                  context.read<JournalBloc>().add(UpdateFinalIntensityEvent(value.round()));
-                },
-                color: afterColor,
-              ),
-              
-              const Spacer(),
-              
+
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(

@@ -26,66 +26,74 @@ class WizardStep4Reframing extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                isPositiveFlow ? 'Позитивний досвід' : 'Новий погляд',
-                style: const TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                isPositiveFlow
-                    ? 'Зафіксуйте, що саме допомогло вам це відчути (дії, думки, люди, контекст).'
-                    : 'Базуючись на доказах "проти", сформулюйте більш збалансовану думку',
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Colors.blueGrey,
-                ),
-              ),
-              const SizedBox(height: 24),
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withAlpha(20),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: TextField(
-                  controller: alternativeController,
-                  decoration: InputDecoration(
-                    hintText: isPositiveFlow
-                        ? 'Що допомогло мені відчути спокій/радість...'
-                        : 'Після проведеного аналізу зараз я думаю...',
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.all(16),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isPositiveFlow ? 'Позитивний досвід' : 'Новий погляд',
+                        style: const TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        isPositiveFlow
+                            ? 'Зафіксуйте, що саме допомогло вам це відчути (дії, думки, люди, контекст).'
+                            : 'Базуючись на доказах "проти", сформулюйте більш збалансовану думку',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.blueGrey,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withAlpha(20),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: TextField(
+                          controller: alternativeController,
+                          decoration: InputDecoration(
+                            hintText: isPositiveFlow
+                                ? 'Що допомогло мені відчути спокій/радість...'
+                                : 'Після проведеного аналізу зараз я думаю...',
+                            border: InputBorder.none,
+                            contentPadding: const EdgeInsets.all(16),
+                          ),
+                          maxLines: 4,
+                          onChanged: (text) {
+                            context.read<JournalBloc>().add(UpdateAlternativeThoughtEvent(text));
+                          },
+                        ),
+                      ),
+
+                      if (!isPositiveFlow) ...[
+                        const SizedBox(height: 24),
+                        EmotionSlider(
+                          value: state.draftEntry.alternativeThoughtBelief.toDouble(),
+                          label: 'Наскільки ви вірите у цю нову думку?',
+                          onChanged: (value) {
+                            context.read<JournalBloc>().add(UpdateAlternativeBeliefEvent(value.round()));
+                          },
+                          color: AppColors.emotionPositive,
+                        ),
+                      ],
+                    ],
                   ),
-                  maxLines: 4,
-                  onChanged: (text) {
-                    context.read<JournalBloc>().add(UpdateAlternativeThoughtEvent(text));
-                  },
                 ),
               ),
-
-              if (!isPositiveFlow) ...[
-                const SizedBox(height: 24),
-                EmotionSlider(
-                  value: state.draftEntry.alternativeThoughtBelief.toDouble(),
-                  label: 'Наскільки ви вірите у цю нову думку?',
-                  onChanged: (value) {
-                    context.read<JournalBloc>().add(UpdateAlternativeBeliefEvent(value.round()));
-                  },
-                  color: AppColors.emotionPositive,
-                ),
-              ],
-
-              const Spacer(),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(

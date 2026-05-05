@@ -1,9 +1,6 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../core/network/api_config.dart';
-import '../../../../core/network/dio_factory.dart';
-import '../../../../core/storage/token_storage.dart';
+import '../../../../core/di/service_locator.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/score_color_scale.dart';
 import '../../../checkins/presentation/widgets/daily_checkin_tile.dart' show EmotionUi;
@@ -27,14 +24,7 @@ class _JournalTabState extends State<JournalTab> {
   @override
   void initState() {
     super.initState();
-
-    final isAndroid = !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
-    final dio = DioFactory(
-      baseUrl: ApiConfig.baseUrl(isAndroidEmulator: isAndroid),
-      tokenStorage: TokenStorage(),
-    ).create();
-
-    _api = JournalApi(dio);
+    _api = getIt<JournalApi>();
     _reload();
   }
 

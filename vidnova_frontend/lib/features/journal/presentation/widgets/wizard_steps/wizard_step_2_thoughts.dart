@@ -23,62 +23,70 @@ class WizardStep2Thoughts extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Ловець думок',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Що промайнуло у вас в голові безпосередньо перед цими почуттями?',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.blueGrey,
-                ),
-              ),
-              const SizedBox(height: 24),
-              
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withAlpha(20),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: TextField(
-                  controller: thoughtController,
-                  decoration: const InputDecoration(
-                    hintText: 'Наприклад: "Я завжди все псую" або "Ніхто мене не поважає"',
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.all(16),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Ловець думок',
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Що промайнуло у вас в голові безпосередньо перед цими почуттями?',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.blueGrey,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withAlpha(20),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: TextField(
+                          controller: thoughtController,
+                          decoration: const InputDecoration(
+                            hintText: 'Наприклад: "Я завжди все псую" або "Ніхто мене не поважає"',
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.all(16),
+                          ),
+                          maxLines: 3,
+                          onChanged: (text) {
+                            context.read<JournalBloc>().add(UpdateAutomaticThoughtEvent(text));
+                          },
+                        ),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      EmotionSlider(
+                        value: state.draftEntry.thoughtBelief.toDouble(),
+                        label: 'Наскільки ви вірите цим думкам?',
+                        onChanged: (value) {
+                          context.read<JournalBloc>().add(UpdateThoughtBeliefEvent(value.round()));
+                        },
+                        color: AppColors.emotionNegative,
+                      ),
+                    ],
                   ),
-                  maxLines: 3,
-                  onChanged: (text) {
-                    context.read<JournalBloc>().add(UpdateAutomaticThoughtEvent(text));
-                  },
                 ),
               ),
-              
-              const SizedBox(height: 24),
-              
-              EmotionSlider(
-                value: state.draftEntry.thoughtBelief.toDouble(),
-                label: 'Наскільки ви вірите цим думкам?',
-                onChanged: (value) {
-                  context.read<JournalBloc>().add(UpdateThoughtBeliefEvent(value.round()));
-                },
-                color: AppColors.emotionNegative,
-              ),
-              
-              const Spacer(),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(

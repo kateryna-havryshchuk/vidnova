@@ -1,30 +1,65 @@
 part of '../pages/insights_tab.dart';
 
-class _TrendChart extends StatelessWidget {
-  final List<DailyCheckInResponseDto> items;
+class _ReappraisalTrendChart extends StatelessWidget {
+  final List<AbcEntryListItemDto> items;
   final _AnalyticsPeriod period;
   final DateTime rangeFrom;
   final DateTime rangeTo;
-  final Color lineColor;
+  final Color initialColor;
+  final Color afterColor;
 
-  const _TrendChart({
+  const _ReappraisalTrendChart({
     required this.items,
     required this.period,
     required this.rangeFrom,
     required this.rangeTo,
-    required this.lineColor,
+    required this.initialColor,
+    required this.afterColor,
   });
 
   @override
   Widget build(BuildContext context) {
-    final byDay = <DateTime, int>{};
+    // Group by local day.
+    final byDay = <DateTime, List<AbcEntryListItemDto>>{};
     for (final e in items) {
-      final dt = DateTime.tryParse(e.date);
-      if (dt == null) continue;
-      byDay[DateTime(dt.year, dt.month, dt.day)] = e.calmScore;
+      final d = DateTime(e.createdDate.year, e.createdDate.month, e.createdDate.day);
+      (byDay[d] ??= <AbcEntryListItemDto>[]).add(e);
     }
 
-    late final List<_TrendValue> values;
+    double avgInitial(AbcEntryListItemDto e) {
+      if (e.emotions.isEmpty) return 0;
+      final sum = e.emotions.fold<int>(0, (a, b) => a + b.initialIntensity);
+      final avgIntensity = sum / e.emotions.length;
+
+      final isPositiveFlow = e.emotions.every((x) => x.emotion == 'Calm' || x.emotion == 'Joy');
+      if (isPositiveFlow) {
+        // Для позитивних (Calm/Joy) інтенсивність = "стан" (не інвертуємо).
+        return avgIntensity;
+      }
+
+      // Для негативних інтенсивність = "негативність", тому інвертуємо у "стан/спокій".
+      return 100 - avgIntensity;
+    }
+
+    ({double initial, double after}) avgForDay(DateTime d) {
+      final list = byDay[d];
+      if (list == null || list.isEmpty) return (initial: 0, after: 0);
+
+      var sumInitial = 0.0;
+      var sumAfter = 0.0;
+      for (final e in list) {
+        sumInitial += avgInitial(e);
+        sumAfter += e.finalEmotionIntensity.toDouble();
+      }
+      return (
+        initial: sumInitial / list.length,
+        after: sumAfter / list.length,
+      );
+    }
+
+    late final List<_TrendValue> initialValues;
+    late final List<_TrendValue> afterValues;
+    late final List<int> counts;
     late final List<int> xLabelIndices;
     late final List<String> xLabels;
 
@@ -34,25 +69,42 @@ class _TrendChart extends StatelessWidget {
         return DateTime(d.year, d.month, d.day);
       });
 
-      values = [
+      initialValues = [
         for (final d in days)
           _TrendValue(
-            value: (byDay[d] ?? 0).toDouble(),
+            value: avgForDay(d).initial,
             hasData: byDay.containsKey(d),
           )
       ];
+      afterValues = [
+        for (final d in days)
+          _TrendValue(
+            value: avgForDay(d).after,
+            hasData: byDay.containsKey(d),
+          )
+      ];
+      counts = [for (final d in days) (byDay[d]?.length ?? 0)];
       xLabelIndices = List<int>.generate(7, (i) => i);
       xLabels = [for (final d in days) _weekdayShort(d)];
     } else if (period == _AnalyticsPeriod.month) {
       final first = DateTime(rangeFrom.year, rangeFrom.month, 1);
       final daysInMonth = DateTime(first.year, first.month + 1, 0).day;
-      values = List<_TrendValue>.generate(daysInMonth, (i) {
+
+      initialValues = List<_TrendValue>.generate(daysInMonth, (i) {
         final d = DateTime(first.year, first.month, i + 1);
         final has = byDay.containsKey(d);
-        return _TrendValue(value: (byDay[d] ?? 0).toDouble(), hasData: has);
+        return _TrendValue(value: avgForDay(d).initial, hasData: has);
+      });
+      afterValues = List<_TrendValue>.generate(daysInMonth, (i) {
+        final d = DateTime(first.year, first.month, i + 1);
+        final has = byDay.containsKey(d);
+        return _TrendValue(value: avgForDay(d).after, hasData: has);
+      });
+      counts = List<int>.generate(daysInMonth, (i) {
+        final d = DateTime(first.year, first.month, i + 1);
+        return byDay[d]?.length ?? 0;
       });
 
-      // Match the screenshot style: day labels every ~5 days.
       final ticks = <int>[1, 6, 11, 16, 21, 26];
       xLabelIndices = [
         for (final day in ticks)
@@ -60,34 +112,41 @@ class _TrendChart extends StatelessWidget {
       ];
       xLabels = [for (final i in xLabelIndices) '${i + 1}'];
     } else {
-      // All time (auto-scale):
-      // - if data fits into a single month -> render by day (like Month)
-      // - otherwise render monthly averages with month labels
-      // - if very long -> yearly averages
+      // All time auto-scale (same behavior as the main trend chart).
       final parsed = <DateTime>[
-        for (final e in items)
-          if (DateTime.tryParse(e.date) != null) DateTime.parse(e.date)
+        for (final e in items) DateTime(e.createdDate.year, e.createdDate.month, e.createdDate.day)
       ];
 
       if (parsed.isEmpty) {
-        values = const <_TrendValue>[];
+        initialValues = const <_TrendValue>[];
+        afterValues = const <_TrendValue>[];
+        counts = const <int>[];
         xLabelIndices = const <int>[];
         xLabels = const <String>[];
       } else {
         parsed.sort();
-        final firstDt = DateTime(parsed.first.year, parsed.first.month, parsed.first.day);
-        final lastDt = DateTime(parsed.last.year, parsed.last.month, parsed.last.day);
+        final firstDt = parsed.first;
+        final lastDt = parsed.last;
 
         final monthsCount = _monthsBetweenInclusive(firstDt, lastDt);
 
         if (monthsCount <= 1) {
-          // Same as Month view, but based on actual data month.
           final first = DateTime(lastDt.year, lastDt.month, 1);
           final daysInMonth = DateTime(first.year, first.month + 1, 0).day;
-          values = List<_TrendValue>.generate(daysInMonth, (i) {
+
+          initialValues = List<_TrendValue>.generate(daysInMonth, (i) {
             final d = DateTime(first.year, first.month, i + 1);
             final has = byDay.containsKey(d);
-            return _TrendValue(value: (byDay[d] ?? 0).toDouble(), hasData: has);
+            return _TrendValue(value: avgForDay(d).initial, hasData: has);
+          });
+          afterValues = List<_TrendValue>.generate(daysInMonth, (i) {
+            final d = DateTime(first.year, first.month, i + 1);
+            final has = byDay.containsKey(d);
+            return _TrendValue(value: avgForDay(d).after, hasData: has);
+          });
+          counts = List<int>.generate(daysInMonth, (i) {
+            final d = DateTime(first.year, first.month, i + 1);
+            return byDay[d]?.length ?? 0;
           });
 
           final ticks = <int>[1, 6, 11, 16, 21, 26];
@@ -101,12 +160,12 @@ class _TrendChart extends StatelessWidget {
           final startMonth = DateTime(firstDt.year, firstDt.month, 1);
           final endMonth = DateTime(lastDt.year, lastDt.month, 1);
 
-          final months = <(int, int), List<int>>{};
+          final monthAgg = <(int, int), List<({double initial, double after})>>{};
           for (final e in items) {
-            final dt = DateTime.tryParse(e.date);
-            if (dt == null) continue;
+            final dt = e.createdDate;
             final key = (dt.year, dt.month);
-            (months[key] ??= <int>[]).add(e.calmScore);
+            final pair = (initial: avgInitial(e), after: e.finalEmotionIntensity.toDouble());
+            (monthAgg[key] ??= <({double initial, double after})>[]).add(pair);
           }
 
           final monthKeys = <(int, int)>[];
@@ -116,16 +175,27 @@ class _TrendChart extends StatelessWidget {
             cursor = DateTime(cursor.year, cursor.month + 1, 1);
           }
 
-          values = [
+          initialValues = [
             for (final k in monthKeys)
-              if (months[k] == null)
+              if (monthAgg[k] == null)
                 const _TrendValue(value: 0, hasData: false)
               else
                 _TrendValue(
-                  value: months[k]!.reduce((a, b) => a + b) / months[k]!.length,
+                  value: monthAgg[k]!.fold<double>(0, (a, b) => a + b.initial) / monthAgg[k]!.length,
                   hasData: true,
                 )
           ];
+          afterValues = [
+            for (final k in monthKeys)
+              if (monthAgg[k] == null)
+                const _TrendValue(value: 0, hasData: false)
+              else
+                _TrendValue(
+                  value: monthAgg[k]!.fold<double>(0, (a, b) => a + b.after) / monthAgg[k]!.length,
+                  hasData: true,
+                )
+          ];
+          counts = [for (final k in monthKeys) (monthAgg[k]?.length ?? 0)];
 
           final step = monthKeys.length <= 6
               ? 1
@@ -140,8 +210,8 @@ class _TrendChart extends StatelessWidget {
           }
           if (idx.isEmpty || idx.first != 0) idx.insert(0, 0);
           if (idx.last != monthKeys.length - 1) idx.add(monthKeys.length - 1);
-
           xLabelIndices = idx.toSet().toList()..sort();
+
           final singleYear = monthKeys.first.$1 == monthKeys.last.$1;
           xLabels = [
             for (final i in xLabelIndices)
@@ -149,49 +219,57 @@ class _TrendChart extends StatelessWidget {
           ];
         } else {
           // Yearly aggregation.
-          final years = <int, List<int>>{};
+          final years = <int, List<({double initial, double after})>>{};
           for (final e in items) {
-            final dt = DateTime.tryParse(e.date);
-            if (dt == null) continue;
-            (years[dt.year] ??= <int>[]).add(e.calmScore);
+            (years[e.createdDate.year] ??= <({double initial, double after})>[]).add(
+              (initial: avgInitial(e), after: e.finalEmotionIntensity.toDouble()),
+            );
           }
           final yearKeys = years.keys.toList()..sort();
-          values = [
+          initialValues = [
             for (final y in yearKeys)
               _TrendValue(
-                value: years[y]!.reduce((a, b) => a + b) / years[y]!.length,
+                value: years[y]!.fold<double>(0, (a, b) => a + b.initial) / years[y]!.length,
                 hasData: true,
               )
           ];
+          afterValues = [
+            for (final y in yearKeys)
+              _TrendValue(
+                value: years[y]!.fold<double>(0, (a, b) => a + b.after) / years[y]!.length,
+                hasData: true,
+              )
+          ];
+          counts = [for (final y in yearKeys) years[y]!.length];
 
-          final rawIdx = values.isEmpty
+          final rawIdx = initialValues.isEmpty
               ? const <int>[]
-              : <int>[0, if (values.length > 2) values.length ~/ 2, values.length - 1];
+              : <int>[0, if (initialValues.length > 2) initialValues.length ~/ 2, initialValues.length - 1];
           final unique = <int>{};
           for (final i in rawIdx) {
             unique.add(i);
           }
-          final finalIdx = unique.toList()..sort();
-
-          xLabelIndices = finalIdx;
+          xLabelIndices = unique.toList()..sort();
           xLabels = [for (final i in xLabelIndices) yearKeys[i].toString()];
         }
       }
     }
 
     return CustomPaint(
-      painter: _TrendChartPainter(
-        values: values,
-        lineColor: lineColor,
+      painter: _DualTrendChartPainter(
+        initialValues: initialValues,
+        afterValues: afterValues,
+        initialColor: initialColor,
+        afterColor: afterColor,
         xLabels: xLabels,
         xLabelIndices: xLabelIndices,
+        counts: counts,
       ),
       child: const SizedBox.expand(),
     );
   }
 
   String _weekdayShort(DateTime d) {
-    // DateTime.weekday: Mon=1..Sun=7
     switch (d.weekday) {
       case DateTime.monday:
         return 'Пн';
@@ -242,25 +320,21 @@ class _TrendChart extends StatelessWidget {
   }
 }
 
-class _TrendValue {
-  final double value;
-  final bool hasData;
-
-  const _TrendValue({
-    required this.value,
-    required this.hasData,
-  });
-}
-
-class _TrendChartPainter extends CustomPainter {
-  final List<_TrendValue> values;
-  final Color lineColor;
+class _DualTrendChartPainter extends CustomPainter {
+  final List<_TrendValue> initialValues;
+  final List<_TrendValue> afterValues;
+  final List<int> counts;
+  final Color initialColor;
+  final Color afterColor;
   final List<String> xLabels;
   final List<int> xLabelIndices;
 
-  _TrendChartPainter({
-    required this.values,
-    required this.lineColor,
+  _DualTrendChartPainter({
+    required this.initialValues,
+    required this.afterValues,
+    required this.counts,
+    required this.initialColor,
+    required this.afterColor,
     required this.xLabels,
     required this.xLabelIndices,
   });
@@ -295,10 +369,11 @@ class _TrendChartPainter extends CustomPainter {
     }
 
     // X-axis labels
-    if (values.length >= 2 && xLabelIndices.isNotEmpty && xLabels.isNotEmpty) {
+    final len = math.min(initialValues.length, afterValues.length);
+    if (len >= 2 && xLabelIndices.isNotEmpty && xLabels.isNotEmpty) {
       for (var i = 0; i < xLabelIndices.length && i < xLabels.length; i++) {
-        final idx = xLabelIndices[i].clamp(0, values.length - 1);
-        final x = leftPad + chartW * (idx / (values.length - 1));
+        final idx = xLabelIndices[i].clamp(0, len - 1);
+        final x = leftPad + chartW * (idx / (len - 1));
         textPainter.text = TextSpan(
           text: xLabels[i],
           style: const TextStyle(fontSize: 10, color: AppColors.textSecondary),
@@ -310,15 +385,45 @@ class _TrendChartPainter extends CustomPainter {
       }
     }
 
-    _drawSeriesWithGaps(
-      canvas: canvas,
-      leftPad: leftPad,
-      topPad: topPad,
-      chartW: chartW,
-      chartH: chartH,
-      values: values,
-      color: lineColor,
-    );
+    void drawSeries(List<_TrendValue> values, Color color, {required bool fill}) {
+      _drawSeriesWithGaps(
+        canvas: canvas,
+        leftPad: leftPad,
+        topPad: topPad,
+        chartW: chartW,
+        chartH: chartH,
+        values: values.take(len).toList(growable: false),
+        color: color,
+        fill: fill,
+      );
+    }
+
+    // Draw initial first, then after on top.
+    drawSeries(initialValues, initialColor, fill: false);
+    drawSeries(afterValues, afterColor, fill: true);
+
+    // Mark buckets with multiple situations.
+    if (counts.isNotEmpty) {
+      Offset pointAt(List<_TrendValue> values, int i) {
+        final x = leftPad + chartW * (i / (len - 1));
+        final v = values[i].value.clamp(0, 100);
+        final y = topPad + chartH * (1 - (v / 100));
+        return Offset(x, y);
+      }
+
+      final ringPaint = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.6
+        ..color = AppColors.textSecondary;
+
+      for (var i = 0; i < math.min(counts.length, len); i++) {
+        if (counts[i] <= 1) continue;
+        if (!initialValues[i].hasData && !afterValues[i].hasData) continue;
+
+        final p = afterValues[i].hasData ? pointAt(afterValues, i) : pointAt(initialValues, i);
+        canvas.drawCircle(p, 6, ringPaint);
+      }
+    }
   }
 
   void _drawSeriesWithGaps({
@@ -329,6 +434,7 @@ class _TrendChartPainter extends CustomPainter {
     required double chartH,
     required List<_TrendValue> values,
     required Color color,
+    required bool fill,
   }) {
     if (values.length < 2) return;
 
@@ -339,7 +445,6 @@ class _TrendChartPainter extends CustomPainter {
       return Offset(x, y);
     }
 
-    // Solid smooth segments: only where we have consecutive real data.
     final solidRuns = <List<Offset>>[];
     var run = <Offset>[];
     final isolatedPoints = <Offset>[];
@@ -361,13 +466,7 @@ class _TrendChartPainter extends CustomPainter {
       if (!hasNeighborData(i)) {
         isolatedPoints.add(p);
       }
-      if (run.isEmpty) {
-        run.add(p);
-      } else {
-        // Only keep run if it's consecutive in time (no gaps).
-        // Since we reset on missing values, this holds.
-        run.add(p);
-      }
+      run.add(p);
     }
     if (run.length >= 2) solidRuns.add(run);
 
@@ -376,20 +475,22 @@ class _TrendChartPainter extends CustomPainter {
     for (final points in solidRuns) {
       final smooth = _smoothPath(points);
 
-      final fill = Path.from(smooth)
-        ..lineTo(points.last.dx, baseY)
-        ..lineTo(points.first.dx, baseY)
-        ..close();
+      if (fill) {
+        final fillPath = Path.from(smooth)
+          ..lineTo(points.last.dx, baseY)
+          ..lineTo(points.first.dx, baseY)
+          ..close();
 
-      final fillPaint = Paint()
-        ..style = PaintingStyle.fill
-        ..shader = LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [color.withAlpha(64), Colors.transparent],
-        ).createShader(Rect.fromLTRB(leftPad, topPad, leftPad + chartW, baseY));
+        final fillPaint = Paint()
+          ..style = PaintingStyle.fill
+          ..shader = LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [color.withAlpha(44), Colors.transparent],
+          ).createShader(Rect.fromLTRB(leftPad, topPad, leftPad + chartW, baseY));
 
-      canvas.drawPath(fill, fillPaint);
+        canvas.drawPath(fillPath, fillPaint);
+      }
 
       final linePaint = Paint()
         ..color = color
@@ -401,8 +502,6 @@ class _TrendChartPainter extends CustomPainter {
       canvas.drawPath(smooth, linePaint);
     }
 
-    // If there's a single data point (or isolated points), draw them as dots
-    // so the chart is never empty.
     if (isolatedPoints.isNotEmpty) {
       final dotPaint = Paint()..color = color;
       for (final p in isolatedPoints) {
@@ -410,7 +509,6 @@ class _TrendChartPainter extends CustomPainter {
       }
     }
 
-    // Dashed segments for missing data (we keep the chart continuous by placing missing days at 0).
     final dashPaint = Paint()
       ..color = color.withAlpha(140)
       ..style = PaintingStyle.stroke
@@ -420,8 +518,7 @@ class _TrendChartPainter extends CustomPainter {
     for (var i = 0; i < values.length - 1; i++) {
       final aHas = values[i].hasData;
       final bHas = values[i + 1].hasData;
-      if (aHas && bHas) continue; // solid already
-
+      if (aHas && bHas) continue;
       _drawDashedLine(canvas, pointAt(i), pointAt(i + 1), dashPaint);
     }
   }
@@ -479,11 +576,13 @@ class _TrendChartPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _TrendChartPainter oldDelegate) {
-    return oldDelegate.values != values ||
-        oldDelegate.lineColor != lineColor ||
+  bool shouldRepaint(covariant _DualTrendChartPainter oldDelegate) {
+    return oldDelegate.initialValues != initialValues ||
+        oldDelegate.afterValues != afterValues ||
+        oldDelegate.counts != counts ||
+        oldDelegate.initialColor != initialColor ||
+        oldDelegate.afterColor != afterColor ||
         oldDelegate.xLabels != xLabels ||
         oldDelegate.xLabelIndices != xLabelIndices;
   }
 }
-

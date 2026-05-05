@@ -139,22 +139,11 @@ class DailyCheckInTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Щоденний стан',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (!isLoading && error == null && score != null)
-                          Container(
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final showScore = !isLoading && error == null && score != null;
+                    final scorePill = showScore
+                        ? Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                             decoration: BoxDecoration(
                               color: Colors.white.withAlpha(38),
@@ -193,12 +182,43 @@ class DailyCheckInTile extends StatelessWidget {
                                   ),
                               ],
                             ),
-                          ),
-                        if (!isLoading && error == null && score != null) const SizedBox(width: 10),
+                          )
+                        : null;
+
+                    final trailing = Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (scorePill != null) scorePill,
+                        if (scorePill != null) const SizedBox(width: 10),
                         const Icon(Icons.chevron_right, color: Colors.white),
                       ],
-                    ),
-                  ],
+                    );
+
+                    return Row(
+                      children: [
+                        const Expanded(
+                          child: Text(
+                            'Щоденний стан',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerRight,
+                            child: trailing,
+                          ),
+                        ),
+                      ],
+                    );
+                  },
                 ),
                 const SizedBox(height: 8),
                 if (isLoading)

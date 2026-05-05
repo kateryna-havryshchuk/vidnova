@@ -53,165 +53,161 @@ class _WizardStep3EvidenceState extends State<WizardStep3Evidence> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Аналіз думок',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Коли ми переживаємо, наш мозок фокусується лише на негативі. Давайте перевіримо — чи є реальні факти, що підтверджують вашу тривожну думку, і чи є щось, що їй суперечить?',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.blueGrey,
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              _BalanceCard(
-                forCount: forCount,
-                againstCount: againstCount,
-                delta: balanceDelta,
-                message: balanceText,
-              ),
-
-              const SizedBox(height: 16),
-              const Text(
-                'Запишіть факт або спостереження',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 6),
-              const Text(
-                'Що конкретно сталося? Не оцінки, а факти — те, що можна побачити на камеру.',
-                style: TextStyle(
-                  fontSize: 13,
-                  height: 1.25,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withAlpha(20),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: TextField(
-                        controller: _factController,
-                        decoration: const InputDecoration(
-                          hintText: 'Факт або спостереження',
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                        ),
-                        textInputAction: TextInputAction.done,
-                        onSubmitted: (_) => _addFact(context),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  SizedBox(
-                    height: 48,
-                    width: 48,
-                    child: ElevatedButton(
-                      onPressed: () => _addFact(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        padding: EdgeInsets.zero,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                      child: const Icon(Icons.add, color: Colors.white),
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 16),
               Expanded(
-                child: CustomScrollView(
-                  physics: const ClampingScrollPhysics(),
-                  slivers: [
-                    SliverToBoxAdapter(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Факти',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          _PoolWrap(
-                            items: state.evidencePool,
-                            onRemove: (text) => context.read<JournalBloc>().add(RemoveEvidenceFromPoolEvent(text)),
-                          ),
-                          if (state.evidencePool.isEmpty)
-                            const Padding(
-                              padding: EdgeInsets.only(top: 6),
-                              child: Text(
-                                'Додайте хоча б один факт — потім перетягніть його в одну з зон.',
-                                style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
-                              ),
-                            ),
-                          const SizedBox(height: 16),
-                        ],
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Аналіз думок',
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
-                    ),
-                    SliverFillRemaining(
-                      hasScrollBody: false,
-                      child: Row(
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Коли ми переживаємо, наш мозок фокусується лише на негативі. Давайте перевіримо — чи є реальні факти, що підтверджують вашу тривожну думку, і чи є щось, що їй суперечить?',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.blueGrey,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      _BalanceCard(
+                        forCount: forCount,
+                        againstCount: againstCount,
+                        delta: balanceDelta,
+                        message: balanceText,
+                      ),
+
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Запишіть факт або спостереження',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      const Text(
+                        'Що конкретно сталося? Не оцінки, а факти — те, що можна побачити на камеру.',
+                        style: TextStyle(
+                          fontSize: 13,
+                          height: 1.25,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
                         children: [
                           Expanded(
-                            child: _DropZone(
-                              title: 'Підтверджує',
-                              subtitle: '$forCount',
-                              itemCount: state.evidenceFor.length,
-                              expand: true,
-                              onAccept: (text) => context.read<JournalBloc>().add(MoveEvidenceToForEvent(text)),
-                              child: _ZoneWrap(
-                                items: state.evidenceFor,
-                                onRemove: (text) => context.read<JournalBloc>().add(RemoveEvidenceFromForEvent(text)),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withAlpha(20),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: TextField(
+                                controller: _factController,
+                                decoration: const InputDecoration(
+                                  hintText: 'Факт або спостереження',
+                                  border: InputBorder.none,
+                                  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                ),
+                                textInputAction: TextInputAction.done,
+                                onSubmitted: (_) => _addFact(context),
                               ),
                             ),
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _DropZone(
-                              title: 'Спростовує',
-                              subtitle: '$againstCount',
-                              itemCount: state.evidenceAgainst.length,
-                              expand: true,
-                              onAccept: (text) => context.read<JournalBloc>().add(MoveEvidenceToAgainstEvent(text)),
-                              child: _ZoneWrap(
-                                items: state.evidenceAgainst,
-                                onRemove: (text) => context.read<JournalBloc>().add(RemoveEvidenceFromAgainstEvent(text)),
+                          const SizedBox(width: 10),
+                          SizedBox(
+                            height: 48,
+                            width: 48,
+                            child: ElevatedButton(
+                              onPressed: () => _addFact(context),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                padding: EdgeInsets.zero,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
                               ),
+                              child: const Icon(Icons.add, color: Colors.white),
                             ),
                           ),
                         ],
                       ),
-                    ),
-                  ],
+
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Факти',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      _PoolWrap(
+                        items: state.evidencePool,
+                        onRemove: (text) => context.read<JournalBloc>().add(RemoveEvidenceFromPoolEvent(text)),
+                      ),
+                      if (state.evidencePool.isEmpty)
+                        const Padding(
+                          padding: EdgeInsets.only(top: 6),
+                          child: Text(
+                            'Додайте хоча б один факт — потім перетягніть його в одну з зон.',
+                            style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                          ),
+                        ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        height: 220,
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: _DropZone(
+                                title: 'Підтверджує',
+                                subtitle: '$forCount',
+                                itemCount: state.evidenceFor.length,
+                                expand: true,
+                                onAccept: (text) => context.read<JournalBloc>().add(MoveEvidenceToForEvent(text)),
+                                child: _ZoneWrap(
+                                  items: state.evidenceFor,
+                                  onRemove: (text) => context.read<JournalBloc>().add(RemoveEvidenceFromForEvent(text)),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _DropZone(
+                                title: 'Спростовує',
+                                subtitle: '$againstCount',
+                                itemCount: state.evidenceAgainst.length,
+                                expand: true,
+                                onAccept: (text) => context.read<JournalBloc>().add(MoveEvidenceToAgainstEvent(text)),
+                                child: _ZoneWrap(
+                                  items: state.evidenceAgainst,
+                                  onRemove: (text) => context.read<JournalBloc>().add(RemoveEvidenceFromAgainstEvent(text)),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
 

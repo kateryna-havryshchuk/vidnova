@@ -2,18 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'core/network/api_config.dart';
-import 'core/network/dio_factory.dart';
-import 'core/storage/token_storage.dart';
+import 'core/di/service_locator.dart';
 import 'core/theme/app_colors.dart';
-import 'features/auth/data/auth_api.dart';
-import 'features/auth/data/auth_repository.dart';
 import 'features/auth/presentation/bloc/auth_cubit.dart';
 import 'features/auth/presentation/bloc/auth_state.dart';
 import 'features/auth/presentation/pages/auth_start_page.dart';
 import 'features/main_navigation/pages/main_screen.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  final isAndroid = !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+  setupServiceLocator(isAndroidEmulator: isAndroid);
   runApp(const MyApp());
 }
 
@@ -61,20 +60,7 @@ class _AuthRootState extends State<AuthRoot> {
   @override
   void initState() {
     super.initState();
-
-    final isAndroid = !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
-    final tokenStorage = TokenStorage();
-    final dio = DioFactory(
-      baseUrl: ApiConfig.baseUrl(isAndroidEmulator: isAndroid),
-      tokenStorage: tokenStorage,
-    ).create();
-
-    final repo = AuthRepository(
-      api: AuthApi(dio),
-      tokenStorage: tokenStorage,
-    );
-
-    _cubit = AuthCubit(repo)..bootstrap();
+    _cubit = getIt<AuthCubit>()..bootstrap();
   }
 
   @override

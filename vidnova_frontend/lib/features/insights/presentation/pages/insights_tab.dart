@@ -1,11 +1,8 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:math' as math;
 
-import '../../../../core/network/api_config.dart';
-import '../../../../core/network/dio_factory.dart';
-import '../../../../core/storage/token_storage.dart';
+import '../../../../core/di/service_locator.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/score_color_scale.dart';
 import '../../../auth/presentation/bloc/auth_cubit.dart';
@@ -18,6 +15,8 @@ import '../../../journal/data/models/journal_models.dart';
 part 'insights_tab_state.dart';
 part '../widgets/insights_widgets.dart';
 part '../charts/insights_charts.dart';
+part '../charts/insights_reappraisal_chart.dart';
+part 'insights_tab_sections.dart';
 
 enum _AnalyticsPeriod { week, month, all }
 

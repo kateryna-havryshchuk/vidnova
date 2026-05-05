@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter/foundation.dart';
 import '../bloc/journal_bloc.dart';
 import '../bloc/journal_event.dart';
 import '../bloc/journal_state.dart';
@@ -10,9 +9,7 @@ import '../widgets/wizard_steps/wizard_step_3_evidence.dart';
 import '../widgets/wizard_steps/wizard_step_4_reframing.dart';
 import '../widgets/wizard_steps/wizard_step_5_result.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/network/api_config.dart';
-import '../../../../core/network/dio_factory.dart';
-import '../../../../core/storage/token_storage.dart';
+import '../../../../core/di/service_locator.dart';
 import '../../data/journal_api.dart';
 
 class AbcWizardPage extends StatefulWidget {
@@ -43,13 +40,7 @@ class _AbcWizardPageState extends State<AbcWizardPage> {
   @override
   void initState() {
     super.initState();
-
-    final isAndroid = !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
-    final dio = DioFactory(
-      baseUrl: ApiConfig.baseUrl(isAndroidEmulator: isAndroid),
-      tokenStorage: TokenStorage(),
-    ).create();
-    _api = JournalApi(dio);
+    _api = getIt<JournalApi>();
   }
 
   @override
