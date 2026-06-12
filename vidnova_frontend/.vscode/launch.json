@@ -1,0 +1,25 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Vidnova (Android)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "args": [
+        "--dart-define=API_BASE_URL=http://10.0.2.2:5080",
+        "--dart-define=GOOGLE_SERVER_CLIENT_ID=987988589687-12567dgg31g0p4m5ctm6lrjcc63628bh.apps.googleusercontent.com"
+      ]
+    },
+    {
+      "name": "Vidnova (Windows)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "args": [
+        "--dart-define=API_BASE_URL=http://localhost:5080",
+        "--dart-define=GOOGLE_SERVER_CLIENT_ID=987988589687-12567dgg31g0p4m5ctm6lrjcc63628bh.apps.googleusercontent.com"
+      ]
+    }
+  ]
+}

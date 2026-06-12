@@ -1,16 +1,22 @@
 # vidnova_frontend
 
-A new Flutter project.
+## Real device testing (Android)
 
-## Getting Started
+If your API runs on the dev PC (port 5080), you must point the app to the PC's
+LAN IP and allow cleartext HTTP during development.
 
-This project is a starting point for a Flutter application.
+1) Find the PC IP on the same Wi-Fi (example: 192.168.1.50)
+2) Ensure the backend listens on all interfaces (0.0.0.0:5080)
+3) Run the app with API base URL override:
 
-A few resources to get you started if this is your first Flutter project:
+```bash
+flutter run --dart-define=API_BASE_URL=http://192.168.1.50:5080
+```
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+Alternative (USB):
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```bash
+adb reverse tcp:5080 tcp:5080
+```
+
+Then you can use http://localhost:5080 on the device.
