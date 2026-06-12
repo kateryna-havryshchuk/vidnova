@@ -31,8 +31,10 @@ class WizardStep5Result extends StatelessWidget {
         final beforeColor = ScoreColorScale.discrete(before);
         final afterColor = ScoreColorScale.smooth(after);
 
-        return Padding(
-          padding: const EdgeInsets.all(20.0),
+        final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+
+        return SingleChildScrollView(
+          padding: EdgeInsets.fromLTRB(20, 20, 20, 20 + bottomInset),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -136,7 +138,7 @@ class WizardStep5Result extends StatelessWidget {
                 color: afterColor,
               ),
               
-              const Spacer(),
+              const SizedBox(height: 24),
               
               SizedBox(
                 width: double.infinity,

@@ -48,8 +48,10 @@ class _WizardStep3EvidenceState extends State<WizardStep3Evidence> {
           balanceText = 'Зараз більше фактів, що спростовують думку.';
         }
 
-        return Padding(
-          padding: const EdgeInsets.all(20.0),
+        final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+
+        return SingleChildScrollView(
+          padding: EdgeInsets.fromLTRB(20, 20, 20, 20 + bottomInset),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -144,78 +146,61 @@ class _WizardStep3EvidenceState extends State<WizardStep3Evidence> {
               ),
 
               const SizedBox(height: 16),
-              Expanded(
-                child: CustomScrollView(
-                  physics: const ClampingScrollPhysics(),
-                  slivers: [
-                    SliverToBoxAdapter(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Факти',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          _PoolWrap(
-                            items: state.evidencePool,
-                            onRemove: (text) => context.read<JournalBloc>().add(RemoveEvidenceFromPoolEvent(text)),
-                          ),
-                          if (state.evidencePool.isEmpty)
-                            const Padding(
-                              padding: EdgeInsets.only(top: 6),
-                              child: Text(
-                                'Додайте хоча б один факт — потім перетягніть його в одну з зон.',
-                                style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
-                              ),
-                            ),
-                          const SizedBox(height: 16),
-                        ],
-                      ),
-                    ),
-                    SliverFillRemaining(
-                      hasScrollBody: false,
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: _DropZone(
-                              title: 'Підтверджує',
-                              subtitle: '$forCount',
-                              itemCount: state.evidenceFor.length,
-                              expand: true,
-                              onAccept: (text) => context.read<JournalBloc>().add(MoveEvidenceToForEvent(text)),
-                              child: _ZoneWrap(
-                                items: state.evidenceFor,
-                                onRemove: (text) => context.read<JournalBloc>().add(RemoveEvidenceFromForEvent(text)),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _DropZone(
-                              title: 'Спростовує',
-                              subtitle: '$againstCount',
-                              itemCount: state.evidenceAgainst.length,
-                              expand: true,
-                              onAccept: (text) => context.read<JournalBloc>().add(MoveEvidenceToAgainstEvent(text)),
-                              child: _ZoneWrap(
-                                items: state.evidenceAgainst,
-                                onRemove: (text) => context.read<JournalBloc>().add(RemoveEvidenceFromAgainstEvent(text)),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+              const Text(
+                'Факти',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
                 ),
               ),
+              const SizedBox(height: 8),
+              _PoolWrap(
+                items: state.evidencePool,
+                onRemove: (text) => context.read<JournalBloc>().add(RemoveEvidenceFromPoolEvent(text)),
+              ),
+              if (state.evidencePool.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.only(top: 6),
+                  child: Text(
+                    'Додайте хоча б один факт — потім перетягніть його в одну з зон.',
+                    style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                  ),
+                ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: _DropZone(
+                      title: 'Підтверджує',
+                      subtitle: '$forCount',
+                      itemCount: state.evidenceFor.length,
+                      expand: false,
+                      onAccept: (text) => context.read<JournalBloc>().add(MoveEvidenceToForEvent(text)),
+                      child: _ZoneWrap(
+                        items: state.evidenceFor,
+                        onRemove: (text) => context.read<JournalBloc>().add(RemoveEvidenceFromForEvent(text)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _DropZone(
+                      title: 'Спростовує',
+                      subtitle: '$againstCount',
+                      itemCount: state.evidenceAgainst.length,
+                      expand: false,
+                      onAccept: (text) => context.read<JournalBloc>().add(MoveEvidenceToAgainstEvent(text)),
+                      child: _ZoneWrap(
+                        items: state.evidenceAgainst,
+                        onRemove: (text) => context.read<JournalBloc>().add(RemoveEvidenceFromAgainstEvent(text)),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
 
-              const SizedBox(height: 12),
+              const SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(

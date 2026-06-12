@@ -1,9 +1,10 @@
 class ApiConfig {
-  // Для Windows desktop (Kestrel): http://localhost:5080
-  // Для Android emulator (host loopback): http://10.0.2.2:5080
+  // For Windows desktop (Kestrel): http://localhost:5080
+  // For Android emulator (host loopback): http://10.0.2.2:5080
+  // For Android real device (PC IP on Wi-Fi): http://192.168.1.50:5080
 
   // Опційний оверрайд:
-  // flutter run --dart-define=API_BASE_URL=http://10.0.2.2:5080
+  // flutter run --dart-define=API_BASE_URL=http://192.168.1.50:5080
   static const String _overrideBaseUrl = String.fromEnvironment('API_BASE_URL');
 
   static const String baseUrlWindows = 'http://localhost:5080';

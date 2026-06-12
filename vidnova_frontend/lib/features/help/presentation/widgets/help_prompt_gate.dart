@@ -18,7 +18,7 @@ class HelpPromptGate extends StatefulWidget {
 
 class _HelpPromptGateState extends State<HelpPromptGate> {
   final AppFlagsStorage _flags = AppFlagsStorage();
-  bool _checked = false;
+  bool _checking = false;
 
   @override
   void initState() {
@@ -28,14 +28,25 @@ class _HelpPromptGateState extends State<HelpPromptGate> {
     });
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _maybeShow();
+    });
+  }
+
   Future<void> _maybeShow() async {
-    if (_checked) return;
-    _checked = true;
+    if (_checking) return;
+    _checking = true;
 
     final pending = await _flags.readHelpPromptPending();
     final shown = await _flags.readHelpPromptShown();
 
-    if (!mounted) return;
+    if (!mounted) {
+      _checking = false;
+      return;
+    }
 
     if (pending && !shown) {
       // Mark as handled before showing, so it can't appear twice.
@@ -76,12 +87,15 @@ class _HelpPromptGateState extends State<HelpPromptGate> {
         },
       );
 
+      _checking = false;
       return;
     }
 
     if (pending && shown) {
       await _flags.writeHelpPromptPending(false);
     }
+
+    _checking = false;
   }
 
   @override

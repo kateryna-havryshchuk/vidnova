@@ -21,8 +21,10 @@ class WizardStep4Reframing extends StatelessWidget {
         final isPositiveFlow = state.draftEntry.emotions.isNotEmpty &&
             state.draftEntry.emotions.every((e) => e == 'Calm' || e == 'Joy');
 
-        return Padding(
-          padding: const EdgeInsets.all(20.0),
+        final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+
+        return SingleChildScrollView(
+          padding: EdgeInsets.fromLTRB(20, 20, 20, 20 + bottomInset),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -85,7 +87,7 @@ class WizardStep4Reframing extends StatelessWidget {
                 ),
               ],
 
-              const Spacer(),
+              const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(

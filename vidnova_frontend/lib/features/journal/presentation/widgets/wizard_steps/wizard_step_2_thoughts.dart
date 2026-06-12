@@ -18,8 +18,10 @@ class WizardStep2Thoughts extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<JournalBloc, JournalState>(
       builder: (context, state) {
-        return Padding(
-          padding: const EdgeInsets.all(20.0),
+        final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+
+        return SingleChildScrollView(
+          padding: EdgeInsets.fromLTRB(20, 20, 20, 20 + bottomInset),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -78,7 +80,7 @@ class WizardStep2Thoughts extends StatelessWidget {
                 color: AppColors.emotionNegative,
               ),
               
-              const Spacer(),
+              const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
