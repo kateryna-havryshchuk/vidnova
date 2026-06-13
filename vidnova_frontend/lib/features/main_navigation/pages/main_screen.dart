@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/theme/app_colors.dart'; 
+import '../../auth/presentation/bloc/auth_cubit.dart';
 import '../bloc/navigation_cubit.dart';
 import '../../home/presentation/pages/home_tab.dart';
 import '../../insights/presentation/pages/insights_tab.dart';
@@ -18,7 +19,11 @@ class MainScreen extends StatelessWidget {
       create: (context) => NavigationCubit(),
       child: BlocBuilder<NavigationCubit, int>(
         builder: (context, currentIndex) {
+          final me = context.select((AuthCubit c) => c.state.me);
+          final userKey = me == null ? null : (me.email.trim().isNotEmpty ? me.email.trim().toLowerCase() : me.userId.trim());
+
           return HelpPromptGate(
+            userKey: userKey,
             child: Scaffold(
               backgroundColor: AppColors.background,
               body: IndexedStack(

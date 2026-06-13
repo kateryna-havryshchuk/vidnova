@@ -172,6 +172,7 @@ class _HomeTabState extends State<HomeTab> {
                               builder: (context) => DailyCheckInPage(
                                 api: _checkInsApi,
                                 date: DateTime.now(),
+                                initialCheckIn: snapshot.data,
                               ),
                             ),
                           );

@@ -454,6 +454,7 @@ class _SituationCard extends StatelessWidget {
                     final canInline = availableForEmoji > 0 && emojiRowWidth <= (availableForEmoji - 4);
 
                     final emojiWrap = Wrap(
+                      alignment: WrapAlignment.center,
                       spacing: emojiSpacing,
                       runSpacing: 4,
                       children: emotions
@@ -468,6 +469,7 @@ class _SituationCard extends StatelessWidget {
 
                     final emojiRow = Row(
                       mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: List<Widget>.generate(
                         emotions.length,
                         (i) {
@@ -538,9 +540,9 @@ class _SituationCard extends StatelessWidget {
                     }
 
                     return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        emojiWrap,
+                        Center(child: emojiWrap),
                         const SizedBox(height: 10),
                         bar(),
                       ],

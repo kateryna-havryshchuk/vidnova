@@ -11,11 +11,13 @@ import '../widgets/daily_checkin_tile.dart';
 class DailyCheckInPage extends StatefulWidget {
   final CheckInsApi api;
   final DateTime date;
+  final DailyCheckInResponseDto? initialCheckIn;
 
   const DailyCheckInPage({
     super.key,
     required this.api,
     required this.date,
+    this.initialCheckIn,
   });
 
   @override
@@ -45,7 +47,23 @@ class _DailyCheckInPageState extends State<DailyCheckInPage> {
   @override
   void initState() {
     super.initState();
-    _load();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (widget.initialCheckIn == null) {
+        _load();
+      }
+    });
+
+    final initial = widget.initialCheckIn;
+    if (initial != null) {
+      _descriptionController.text = initial.description;
+      _calmScore = initial.calmScore;
+      _selected
+        ..clear()
+        ..addEntries(initial.emotions.map((e) => MapEntry(e.emotion, e.intensity)));
+      _exists = true;
+      _isLoading = false;
+    }
   }
 
   @override
@@ -343,17 +361,20 @@ class _DailyCheckInPageState extends State<DailyCheckInPage> {
   Widget _emotionGrid() {
     final blocked = _blockedEmotions();
 
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
-      children: [
-        for (final emotion in EmotionUi.all)
-          _emotionCircle(
-            emotion: emotion,
-            isSelected: _selected.containsKey(emotion),
-            isBlocked: blocked.contains(emotion) && !_selected.containsKey(emotion),
-          ),
-      ],
+    return Center(
+      child: Wrap(
+        alignment: WrapAlignment.center,
+        spacing: 12,
+        runSpacing: 12,
+        children: [
+          for (final emotion in EmotionUi.all)
+            _emotionCircle(
+              emotion: emotion,
+              isSelected: _selected.containsKey(emotion),
+              isBlocked: blocked.contains(emotion) && !_selected.containsKey(emotion),
+            ),
+        ],
+      ),
     );
   }
 

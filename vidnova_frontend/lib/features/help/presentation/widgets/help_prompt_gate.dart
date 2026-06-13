@@ -6,10 +6,12 @@ import '../pages/help_page.dart';
 
 class HelpPromptGate extends StatefulWidget {
   final Widget child;
+  final String? userKey;
 
   const HelpPromptGate({
     super.key,
     required this.child,
+    required this.userKey,
   });
 
   @override
@@ -36,12 +38,26 @@ class _HelpPromptGateState extends State<HelpPromptGate> {
     });
   }
 
+  @override
+  void didUpdateWidget(covariant HelpPromptGate oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.userKey != widget.userKey) {
+      _checking = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _maybeShow();
+      });
+    }
+  }
+
   Future<void> _maybeShow() async {
     if (_checking) return;
+    final userKey = widget.userKey;
+    if (userKey == null || userKey.trim().isEmpty) return;
+
     _checking = true;
 
-    final pending = await _flags.readHelpPromptPending();
-    final shown = await _flags.readHelpPromptShown();
+    final pending = await _flags.readHelpPromptPending(userKey);
+    final shown = await _flags.readHelpPromptShown(userKey);
 
     if (!mounted) {
       _checking = false;
@@ -50,8 +66,8 @@ class _HelpPromptGateState extends State<HelpPromptGate> {
 
     if (pending && !shown) {
       // Mark as handled before showing, so it can't appear twice.
-      await _flags.writeHelpPromptPending(false);
-      await _flags.writeHelpPromptShown(true);
+      await _flags.writeHelpPromptPending(userKey, false);
+      await _flags.writeHelpPromptShown(userKey, true);
 
       if (!mounted) return;
 
@@ -92,7 +108,7 @@ class _HelpPromptGateState extends State<HelpPromptGate> {
     }
 
     if (pending && shown) {
-      await _flags.writeHelpPromptPending(false);
+      await _flags.writeHelpPromptPending(userKey, false);
     }
 
     _checking = false;
