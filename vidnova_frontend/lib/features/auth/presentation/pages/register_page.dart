@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/storage/app_flags_storage.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/animated_logo.dart';
 import '../../../../core/widgets/error_banner.dart';
@@ -49,13 +48,6 @@ class _RegisterPageState extends State<RegisterPage> {
           listenWhen: (prev, next) => prev.isAuthenticated != next.isAuthenticated,
           listener: (context, state) async {
             if (state.isAuthenticated) {
-              // Show the help prompt once after registration (persisted locally).
-              final flags = AppFlagsStorage();
-              final alreadyShown = await flags.readHelpPromptShown();
-              if (!alreadyShown) {
-                await flags.writeHelpPromptPending(true);
-              }
-
               if (!context.mounted) return;
               Navigator.popUntil(context, (route) => route.isFirst);
             }

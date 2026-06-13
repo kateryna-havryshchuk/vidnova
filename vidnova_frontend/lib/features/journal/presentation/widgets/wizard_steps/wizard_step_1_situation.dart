@@ -114,19 +114,21 @@ class WizardStep1Situation extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Wrap(
-                              alignment: WrapAlignment.center,
-                              spacing: 12,
-                              runSpacing: 12,
-                              children: [
-                                for (final emotion in EmotionUi.all)
-                                  _emotionCircle(
-                                    context,
-                                    emotion: emotion,
-                                    isSelected: selected.contains(emotion),
-                                    isBlocked: blocked.contains(emotion) && !selected.contains(emotion),
-                                  ),
-                              ],
+                            Center(
+                              child: Wrap(
+                                alignment: WrapAlignment.center,
+                                spacing: 12,
+                                runSpacing: 12,
+                                children: [
+                                  for (final emotion in EmotionUi.all)
+                                    _emotionCircle(
+                                      context,
+                                      emotion: emotion,
+                                      isSelected: selected.contains(emotion),
+                                      isBlocked: blocked.contains(emotion) && !selected.contains(emotion),
+                                    ),
+                                ],
+                              ),
                             ),
                             if (selected.isNotEmpty) ...[
                               const SizedBox(height: 16),

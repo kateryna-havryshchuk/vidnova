@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import '../../../../core/storage/app_flags_storage.dart';
 import '../../data/auth_repository.dart';
 import '../../data/models/change_email_request.dart';
 import '../../data/models/change_password_request.dart';
@@ -8,12 +9,14 @@ import '../../data/models/google_login_request.dart';
 import '../../data/models/login_request.dart';
 import '../../data/models/register_request.dart';
 import '../../data/models/set_password_request.dart';
+import '../../data/models/me_response.dart';
 import 'auth_state.dart';
 
 const _googleServerClientId = String.fromEnvironment('GOOGLE_SERVER_CLIENT_ID');
 
 class AuthCubit extends Cubit<AuthState> {
   final AuthRepository _repo;
+  final AppFlagsStorage _flags = AppFlagsStorage();
 
   AuthCubit(this._repo) : super(AuthState.initial());
 
@@ -61,6 +64,7 @@ class AuthCubit extends Cubit<AuthState> {
       ));
 
       final me = await _repo.me();
+      await _markHelpPromptPendingIfNeeded(me);
       emit(state.copyWith(isLoading: false, me: me));
     } catch (e) {
       emit(state.copyWith(isLoading: false, error: _extractError(e)));
@@ -75,6 +79,7 @@ class AuthCubit extends Cubit<AuthState> {
     try {
       await _repo.login(LoginRequest(username: username, password: password));
       final me = await _repo.me();
+      await _markHelpPromptPendingIfNeeded(me);
       emit(state.copyWith(isLoading: false, me: me));
     } catch (e) {
       emit(state.copyWith(isLoading: false, error: _extractError(e)));
@@ -92,6 +97,10 @@ class AuthCubit extends Cubit<AuthState> {
         // flutter run --dart-define=GOOGLE_SERVER_CLIENT_ID=...apps.googleusercontent.com
         serverClientId: _googleServerClientId.isNotEmpty ? _googleServerClientId : null,
       );
+
+      // Clear the previously selected account so Android shows the chooser again
+      // when multiple Google accounts exist on the device.
+      await googleSignIn.signOut();
 
       final account = await googleSignIn.signIn();
 
@@ -114,6 +123,7 @@ class AuthCubit extends Cubit<AuthState> {
 
       await _repo.googleLogin(GoogleLoginRequest(idToken: idToken));
       final me = await _repo.me();
+      await _markHelpPromptPendingIfNeeded(me);
       emit(state.copyWith(isLoading: false, me: me));
     } catch (e) {
       emit(state.copyWith(isLoading: false, error: _extractError(e)));
@@ -165,6 +175,7 @@ class AuthCubit extends Cubit<AuthState> {
       ));
 
       final me = await _repo.me();
+      await _markHelpPromptPendingIfNeeded(me);
       emit(state.copyWith(isLoading: false, me: me));
     } catch (e) {
       emit(state.copyWith(isLoading: false, error: _extractError(e)));
@@ -174,6 +185,20 @@ class AuthCubit extends Cubit<AuthState> {
   Future<void> logout() async {
     await _repo.logout();
     emit(AuthState.initial());
+  }
+
+  Future<void> _markHelpPromptPendingIfNeeded(MeResponse me) async {
+    final userKey = _helpPromptUserKey(me);
+    final alreadyShown = await _flags.readHelpPromptShown(userKey);
+    if (!alreadyShown) {
+      await _flags.writeHelpPromptPending(userKey, true);
+    }
+  }
+
+  String _helpPromptUserKey(MeResponse me) {
+    final email = me.email.trim().toLowerCase();
+    if (email.isNotEmpty) return email;
+    return me.userId.trim();
   }
 
   String _extractError(Object e) {
